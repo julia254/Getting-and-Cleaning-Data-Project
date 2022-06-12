@@ -87,17 +87,12 @@ names(Train_Test) <- str_replace(names(Train_Test),"gravity","Gravity")
 
 ##################### Part 4:Extract only the measurements on the mean and standard deviation for each measurement. 
 
-Measurement_Summary <- Train_Test %>% pivot_longer(cols = V1:V561,
-                                                 names_to = "Variable", 
-                                                 values_to = "Measurement") %>% 
-                                    group_by(Variable) %>% 
-                                    summarise(mean = mean(Measurement), 
-                                               sd = sd(Measurement))
+Mean_Sd_Measures <- Train_Test %>% select(Subject, Activity, contains("mean"), contains("std"))
 
 ################Part 5:From the data set in step 4,create a second, independent tidy data set 
 ##with the average of each variable for each activity and each subject.
 
-Train_Test_GroupedMeans <- Train_Test %>% 
+Train_Test_GroupedMeans <- Mean_Sd_Measures %>% 
                                 group_by(Subject, Activity) %>% 
                                 summarise_at(vars(-id), mean, na.rm = TRUE)
 
