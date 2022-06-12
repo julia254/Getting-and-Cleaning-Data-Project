@@ -8,36 +8,19 @@
 
 
 
-#  data for the project:
+#  Data Source for the project:
 
 url <-  "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip" 
 
 
 library(tidyverse)
 
-
-InertiaTest_List <- lapply(list.files(path = paste0(getwd(), "/UCI HAR Dataset/test/Inertial Signals"), 
-                                      pattern = ".txt",
-                                      full.names = TRUE), read.table)
-
-
-file_names <- str_replace(list.files(path = paste0(getwd(), "/UCI HAR Dataset/test/Inertial Signals"), 
-                                     pattern = ".txt"),
-                          ".txt", "") 
-
-names(InertiaTest_List ) <- file_names
-
-
-Intertial_Test <- bind_rows(InertiaTest_List, .id = "column_label")
-
 ##################### Part 1: Merge the training and the test sets to create one data set
 
 ## Load Test files 
 
 Subject_Test <- read.table("UCI HAR Dataset/test/subject_test.txt", col.names = "Subject")
-
 X_Test <- read.table("UCI HAR Dataset/test/X_test.txt")
-
 Y_Test <- read.table("UCI HAR Dataset/test/y_test.txt", col.names = "Activity")
 
 
@@ -45,15 +28,12 @@ Y_Test <- read.table("UCI HAR Dataset/test/y_test.txt", col.names = "Activity")
 ## Load Training Files 
 
 Subject_Train <- read.table("UCI HAR Dataset/train/subject_train.txt", col.names = "Subject")
-
 X_Train <- read.table("UCI HAR Dataset/train/X_train.txt")
-
 Y_Train <- read.table("UCI HAR Dataset/train/y_train.txt", col.names = "Activity")
 
 
 
-## Label the column names to display the feature it represents 
-
+## Label the column names(X_Train and X_Test) to display descriptive variable names 
 
 Features <- read.table("UCI HAR Dataset/features.txt", col.names = c("Code", "Label"))
 
@@ -84,13 +64,14 @@ for(i in Activity_Labels$Code){
 
 ##################### Part 3: Tidy the column names 
 
-##Appropriately labels the data set with descriptive variable names.
+##Appropriately label the data set with descriptive variable names.
 
 Features2 <- str_extract(Features$Label, "[^-]+")
 Features2_Unique <-unique(Features2)
 Features2_Unique 
 
-#23 unique variations of the characters before the dash
+#There are 23 unique variations of the characters before the dash
+# replace re-occuring abbreviations with full name description 
 
 names(Train_Test) <- str_replace(names(Train_Test),"tBody","TimeBody")   
 names(Train_Test) <- str_replace(names(Train_Test),"Acc","Accelerometer") 
@@ -106,7 +87,6 @@ names(Train_Test) <- str_replace(names(Train_Test),"gravity","Gravity")
 
 ##################### Part 4:Extract only the measurements on the mean and standard deviation for each measurement. 
 
-
 Measurement_Summary <- Train_Test %>% pivot_longer(cols = V1:V561,
                                                  names_to = "Variable", 
                                                  values_to = "Measurement") %>% 
@@ -114,13 +94,14 @@ Measurement_Summary <- Train_Test %>% pivot_longer(cols = V1:V561,
                                     summarise(mean = mean(Measurement), 
                                                sd = sd(Measurement))
 
-################Part 5:From the data set in step 4, 
-##################### create a second, independent tidy data set 
-##################### with the average of each variable for each activity and each subject.
+################Part 5:From the data set in step 4,create a second, independent tidy data set 
+##with the average of each variable for each activity and each subject.
 
 Train_Test_GroupedMeans <- Train_Test %>% 
                                 group_by(Subject, Activity) %>% 
                                 summarise_at(vars(-id), mean, na.rm = TRUE)
 
+
+## write the resulting variable 
 
 write.table(Train_Test_GroupedMeans, file = Train_Test_Summary.txt)
