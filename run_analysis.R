@@ -94,9 +94,9 @@ Mean_Sd_Measures <- Train_Test %>% select(Subject, Activity, contains("mean"), c
 
 Train_Test_GroupedMeans <- Mean_Sd_Measures %>% 
                                 group_by(Subject, Activity) %>% 
-                                summarise_at(vars(-id), mean, na.rm = TRUE)
+                                summarise_all(funs(mean))
 
 
 ## write the resulting variable 
 
-write.table(Train_Test_GroupedMeans, file = Train_Test_Summary.txt)
+write.table(Train_Test_GroupedMeans, file = "Train_Test_Summary.txt")
